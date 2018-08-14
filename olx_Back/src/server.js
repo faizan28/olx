@@ -1,4 +1,5 @@
 require('dotenv').config()
+var cloudinary = require('cloudinary');
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -9,7 +10,11 @@ import {
     request
 } from 'https';
 import path from 'path'
-
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET
+});
 const app = express();
 
 const router = express.Router();
@@ -22,12 +27,12 @@ app.use(cors());
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 
-
+cloudinary.uploader.upload("http://via.placeholder.com/350x150", function(result) { 
+  console.log(result) 
+});
 // app.get('/', function(req, res) {
 //     res.sendFile(path.join(__dirname + '/public/index.html'));
 // });
-// mongoose.connect(`mongodb://faizan28:Mobile786@ds143461.mlab.com:43461/db28`);
-// console.log(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.db28}`);
 mongoose.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.DB_NAME}`);
 
 
@@ -99,20 +104,18 @@ router
     .route('/api/checkUser')
     .post((req, res) => {
         Users.find({
-            name:req.body.name
-        },(err,resp)=>{
-            if(err){
+            name: req.body.name
+        }, (err, resp) => {
+            if (err) {
                 res.status(400).send('Failed');
-            }
-            else{
+            } else {
                 if (resp.length > 0) {
                     res.status(200).json({
                         'IsSuccess': false,
                         'message': 'Already Exists'
                     });
                     return;
-                }
-                else{
+                } else {
                     res.status(200).json({
                         'IsSuccess': true,
                         'message': 'Username Available'
@@ -121,9 +124,11 @@ router
             }
         })
     })
-    router.route('/')
-    .get((req,res)=>{
-        res.render('/public/index.html',{ root : VIEWS });
+router.route('/')
+    .get((req, res) => {
+        res.render('/public/index.html', {
+            root: VIEWS
+        });
     })
 router
     .route('/api/Signupuser')
